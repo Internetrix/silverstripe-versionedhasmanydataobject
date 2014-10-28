@@ -1,0 +1,6 @@
+---
+Name: versionedhasmanydataobject
+---
+Page:
+  extensions:
+    - 'VersionedHasManyPageExtension'
