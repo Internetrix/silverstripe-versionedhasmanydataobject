@@ -131,7 +131,7 @@ class VersionedHasManyPageExtension extends DataExtension{
 		}
 	}
 	
-	public function afterGetIsModifiedOnStage(&$isModified){
+	public function getIsModifiedOnStage(&$isModified){
 		if(!$isModified) {
 			$has_many = $this->owner->config()->get('has_many');
 			if($has_many){
