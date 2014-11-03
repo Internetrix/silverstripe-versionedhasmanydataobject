@@ -19,7 +19,8 @@ class VersionDataObjectExtension extends DataExtension {
 		if($has_many){
 			foreach($has_many as $key => $value){
 				if($value::has_extension('VersionDataObjectExtension')) {
-					$foreignKey = $this->owner->$key()->getForeignKey();
+					$relationship 	= $this->owner->getComponents($key);
+					$foreignKey 	= $relationship->getForeignKey();
 					$live = Versioned::get_by_stage($value, "Live", "\"$value\".\"$foreignKey\" = " . $this->owner->ID );
 						
 					if($live) {
@@ -29,8 +30,8 @@ class VersionDataObjectExtension extends DataExtension {
 					}
 						
 					// publish the draft pages
-					if($this->owner->$key()) {
-						foreach($this->owner->$key() as $field) {
+					if($relationship) {
+						foreach($relationship as $field) {
 							$field->doPublish('Stage', 'Live');
 						}
 					}
@@ -53,8 +54,9 @@ class VersionDataObjectExtension extends DataExtension {
 		if($has_many){
 			foreach($has_many as $key => $value){
 				if($value::has_extension('VersionDataObjectExtension')) {
-					if($this->owner->$key()) {
-						foreach($this->owner->$key() as $field) {
+					$relationship = $this->owner->getComponents($key);
+					if($relationship) {
+						foreach($relationship as $field) {
 							$field->doDeleteFromStage('Live');
 						}
 					}
@@ -92,8 +94,9 @@ class VersionDataObjectExtension extends DataExtension {
 			if($has_many){
 				foreach($has_many as $key => $value){
 					if($value::has_extension('VersionDataObjectExtension')) {
-						if($this->owner->$key()) {
-							foreach($this->owner->$key() as $field) {
+						$relationship = $this->owner->getComponents($key);
+						if($relationship) {
+							foreach($relationship as $field) {
 								if($field->getIsModifiedOnStage()) {
 									$isModified = true;
 									break;
@@ -114,8 +117,9 @@ class VersionDataObjectExtension extends DataExtension {
 		if($has_many){
 			foreach($has_many as $key => $value){
 				if($value::has_extension('VersionDataObjectExtension')) {
-					if($this->owner->$key()) {
-						foreach($this->owner->$key() as $field) {
+					$relationship = $this->owner->getComponents($key);
+					if($relationship) {
+						foreach($relationship as $field) {
 							$field->doRevertToLive();
 							$field->delete();
 						}
@@ -130,8 +134,9 @@ class VersionDataObjectExtension extends DataExtension {
 		if($has_many){
 			foreach($has_many as $key => $value){
 				if($value::has_extension('VersionDataObjectExtension')) {
-					if($this->owner->$key()) {
-						foreach($this->owner->$key() as $field) {
+					$relationship = $this->owner->getComponents($key);
+					if($relationship) {
+						foreach($relationship as $field) {
 							$field->publish("Live", "Stage", false);
 							$field->writeWithoutVersion();
 						}
@@ -150,8 +155,9 @@ class VersionDataObjectExtension extends DataExtension {
 		if($has_many){
 			foreach($has_many as $key => $value){
 				if($value::has_extension('VersionDataObjectExtension')) {
-					if($this->owner->$key()) {
-						foreach($this->owner->$key() as $field) {
+					$relationship = $this->owner->getComponents($key);
+					if($relationship) {
+						foreach($relationship as $field) {
 							$field->doDuplicate($page);
 						}
 					}
@@ -183,7 +189,6 @@ class VersionDataObjectExtension extends DataExtension {
 		$actions->push(BetterButton_Save::create());
 		$actions->push(BetterButton_SaveAndClose::create());
 		$actions->push(BetterButton_DeleteDraft::create());
-		
 	}
 	
 }
