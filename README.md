@@ -65,7 +65,7 @@ Please add the following code to Page.php
 	
 3. You have to add the following function in Page. This function is copied from DataObject and modified for supporting versioning.
 
-	public function getManyManyComponents($componentName, $filter = "", $sort = "", $join = "", $limit = "") {
+	public function getManyManyComponents($componentName, $filter = '', $sort = '', $join = '', $limit = '') {
 		list($parentClass, $componentClass, $parentField, $componentField, $table) = $this->many_many($componentName);
 	
 		// If we haven't been written yet, we can't save these relations, so use a list that handles this case
