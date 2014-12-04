@@ -9,7 +9,7 @@
  * @package versionedhasmanydataobject
  *
  */
-class VersionedHasManyPageExtension extends DataExtension{
+class VersionedHMPageExtension extends DataExtension{
 
 	
 	function updateCMSActions(FieldList $actions){

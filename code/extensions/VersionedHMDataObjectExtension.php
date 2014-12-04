@@ -5,7 +5,7 @@
  * @package versionedhasmanydataobject
  * 
  */
-class VersionDataObjectExtension extends DataExtension {
+class VersionedHMDataObjectExtension extends DataExtension {
 	/**
 	 * Publish this Form Field to the live site
 	 *

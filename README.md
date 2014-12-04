@@ -40,7 +40,7 @@ Please add the following code to Page.php
 
 #### many_many
 
-Apply this extension to the dataobject which has Versioned extension (e.g. Page).
+1. pply this extension to the dataobject which has Versioned extension (e.g. Page).
 
 	class Page extends SiteTree {
 	
@@ -52,7 +52,7 @@ Apply this extension to the dataobject which has Versioned extension (e.g. Page)
 		
 	}
 		
-Apply this extension to the dataobject which belongs to the above dataobject (e.g. Slide).
+2. Apply this extension to the dataobject which belongs to the above dataobject (e.g. Slide).
 
 	class Slide extends DataObject {
 	
@@ -63,9 +63,45 @@ Apply this extension to the dataobject which belongs to the above dataobject (e.
 		);
 	}
 	
-If you want to push all many many relationship data to Live mode, please run `dev/build?copymanymanydata2live=all`. 
+3. You have to add the following function in Page. This function is copied from DataObject and modified for supporting versioning.
 
-Please note : by running copymanymanydata2live=all, Live many many relationship tables will be truncated and all Stage data will be copied to Live many many tables.
+	public function getManyManyComponents($componentName, $filter = "", $sort = "", $join = "", $limit = "") {
+		list($parentClass, $componentClass, $parentField, $componentField, $table) = $this->many_many($componentName);
+	
+		// If we haven't been written yet, we can't save these relations, so use a list that handles this case
+		if(!$this->ID) {
+			if(!isset($this->unsavedRelations[$componentName])) {
+				$this->unsavedRelations[$componentName] =
+				new UnsavedRelationList($parentClass, $componentName, $componentClass);
+			}
+			return $this->unsavedRelations[$componentName];
+		}
+		
+		if(
+			Versioned::current_stage() == 'Live' 
+			&& $this->hasExtension('VersionedMMDataObjectExtension')
+			&& $componentClass::has_extension('VersionedMMBelongsDataObjectExtension')
+		){
+			$table .= '_Live';
+		}
+	
+		$result = ManyManyList::create($componentClass, $table, $componentField, $parentField,
+				$this->many_many_extraFields($componentName));
+		if($this->model) $result->setDataModel($this->model);
+	
+		// If this is called on a singleton, then we return an 'orphaned relation' that can have the
+		// foreignID set elsewhere.
+		$result = $result->forForeignID($this->ID);
+			
+		return $result->where($filter)->sort($sort)->limit($limit);
+	}
+	
+	
+If you want to push all many many relationship data to Live mode, please run 
+
+`dev/build?copymanymanydata2live=all`
+
+Please note : by running `copymanymanydata2live=all`, Live many many relationship tables will be truncated and all Stage data will be copied to Live many many tables.
 
 
 

@@ -34,99 +34,83 @@ class VersionedMMDataObjectExtension extends DataExtension {
 			}
 		}
 		
-		
-		
-	}
-	
-	
-	
-	
-	/**
-	 * Update any requests to show published many many relationship.
-	 */
-	function augmentSQL(SQLQuery &$query, DataQuery &$dataQuery = null) {
-		
-		// Don't run on delete queries
-		if ($query->getDelete()) return;
-		
-		//only show published relationship when it's Live mode.
-		if($this->owner->hasExtension('Versioned') && Versioned::current_stage() == 'Live'){
-			//apply where condition if this query is based on many_many relationship
-			if($query->filtersOnFK()){
-						
-// 				$query->addWhere("\"IsPublished\" = 1");
-					
-			}
+		//copy all many many data from stage to live if required
+		if(isset($_GET['copymanymanydata2live']) && $_GET['copymanymanydata2live'] == 'all'){
+			
+			$this->owner->publishManyManyComponents(true);
+			
 		}
 	}
 	
 	
-	
-	
-	public function augmentWrite(&$manipulation) {
+	/**
+	 * write many_many table data into many_many Live table.
+	 * 
+	 * Please note :
+	 * 
+	 * By default, $CopyWholeTable is FALSE, only this record's relationship data will be pushed to Live.
+	 * If $CopyWholeTable is TRUE, the WHOLE Live many many table data will be replaced by Stage many many data.(use this feature with caution)
+	 * 
+	 * @param $CopyWholeTable boolean 
+	 */
+	public function publishManyManyComponents($CopyWholeTable = false) {
 		
 		// If we're editing Live, then use (table)_Live instead of (table)
-		if(
-			$this->owner->hasExtension('Versioned')
-			&& Versioned::current_stage() == 'Live'
-		) {
-			$ManyMany = $this->owner->config()->get('many_many');
+		$ManyMany = $this->owner->config()->get('many_many');
+		
+		$tableList = DB::tableList();
+		
+		foreach($ManyMany as $componentName => $ManyManyClassName) {
 			
-			$tableList = DB::tableList();
+			list($parentClass, $componentClass, $parentField, $componentField, $StageManyManyTable) = $this->owner->many_many($componentName);
 			
-			foreach($ManyMany as $componentName => $ManyManyClassName) {
+			//check if the many_many component has Live table.
+			$LiveManyManyTable = "{$StageManyManyTable}_Live";
+			
+			if(in_array($LiveManyManyTable, $tableList)){
+				//get all stage data
+				$StageWhere = ($CopyWholeTable === true) ?  '1' : "\"{$parentField}\" = {$this->owner->ID}";
+				$StageData = DB::query("SELECT * FROM \"{$StageManyManyTable}\" WHERE {$StageWhere}");
 				
-				list($parentClass, $componentClass, $parentField, $componentField, $StageManyManyTable) = $this->owner->many_many($componentName);
-				
-				//check if the many_many component has Live table.
-				$LiveManyManyTable = "{$StageManyManyTable}_Live";
-				
-				if(in_array($LiveManyManyTable, $tableList)){
-					//get all stage data
-					$StageData = DB::query("SELECT * FROM \"{$StageManyManyTable}\" WHERE \"{$parentField}\" = {$this->owner->ID}");
-					
-					//delete live data.
+				//delete live data.
+				if($CopyWholeTable === true){
+					DB::query("TRUNCATE \"{$LiveManyManyTable}\"");
+				}else{
 					DB::query("DELETE FROM \"{$LiveManyManyTable}\" WHERE \"{$parentField}\" = {$this->owner->ID}");
+				}
+				
+				
+				//insert all stage data into Live Many Many table.
+				if($StageData->numRecords()){
+					$Columns = array();
+					$Values = array();
 					
-					//insert all stage data into Live Many Many table.
-					if($StageData->numRecords()){
-						$Columns = array();
-						$Values = array();
-						
-						foreach ($StageData as $DataArray){
-							if(empty($Columns)){
-								$Columns = array_keys($DataArray);
-							}
-							
-							$Values[] = "('" . implode("','", $DataArray) . "')";
+					foreach ($StageData as $DataArray){
+						if(empty($Columns)){
+							$Columns = array_keys($DataArray);
 						}
 						
-						$InsertQuery = "INSERT INTO \"{$LiveManyManyTable}\" (\"".implode('","', $Columns)."\") VALUES ";
-						
-						$InsertQuery .= implode(',', $Values);
-						
-						DB::query($InsertQuery);
+						$Values[] = "('" . implode("','", $DataArray) . "')";
 					}
+					
+					$InsertQuery = "INSERT INTO \"{$LiveManyManyTable}\" (\"".implode('","', $Columns)."\") VALUES ";
+					
+					$InsertQuery .= implode(',', $Values);
+					
+					DB::query($InsertQuery);
 				}
 			}
 		}
 	}
 	
 	
+	/**
+	 * Publish many many relationship
+	 */
+	function onAfterPublish(&$original) {
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+		$this->owner->publishManyManyComponents();
+	}
 	
 }
+
