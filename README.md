@@ -43,19 +43,16 @@ Please add the following code to Page.php
 1. pply this extension to the dataobject which has Versioned extension (e.g. Page).
 
 	class Page extends SiteTree {
-	
 		private static $many_many = array('Slides' => 'Slide');
 		
 		private static $extensions = array(
 			"VersionedMMDataObjectExtension"
 		);
-		
 	}
 		
 2. Apply this extension to the dataobject which belongs to the above dataobject (e.g. Slide).
 
 	class Slide extends DataObject {
-	
 		private static $belongs_many_many = array('Pages' => 'Page');
 	
 		private static $extensions = array(
@@ -95,7 +92,6 @@ Please add the following code to Page.php
 			
 		return $result->where($filter)->sort($sort)->limit($limit);
 	}
-	
 	
 If you want to push all many many relationship data to Live mode, please run 
 
