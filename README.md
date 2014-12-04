@@ -40,12 +40,29 @@ Please add the following code to Page.php
 
 #### many_many
 
-Apply this extension to the dataobject which has Versioned extension (e.g. Page or SiteTree).
+Apply this extension to the dataobject which has Versioned extension (e.g. Page).
 
-	private static $extensions = array(
-		"VersionedMMDataObjectExtension"
-	);
+	class Page extends SiteTree {
+	
+		private static $many_many = array('Slides' => 'Slide');
+		
+		private static $extensions = array(
+			"VersionedMMDataObjectExtension"
+		);
+		
+	}
+		
+Apply this extension to the dataobject which belongs to the above dataobject (e.g. Slide).
 
+	class Slide extends DataObject {
+	
+		private static $belongs_many_many = array('Pages' => 'Page');
+	
+		private static $extensions = array(
+			"VersionedMMBelongsDataObjectExtension"
+		);
+	}
+	
 If you want to push all many many relationship data to Live mode, please run `dev/build?copymanymanydata2live=all`. 
 
 Please note : by running copymanymanydata2live=all, Live many many relationship tables will be truncated and all Stage data will be copied to Live many many tables.
