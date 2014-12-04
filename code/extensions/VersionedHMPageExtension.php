@@ -6,7 +6,7 @@
  * 
  * 
  * @author guy.watson@internetrix.com.au
- * @package versionedhasmanydataobject
+ * @package versionedextensions
  *
  */
 class VersionedHMPageExtension extends DataExtension{

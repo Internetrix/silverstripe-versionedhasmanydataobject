@@ -2,7 +2,7 @@
 /**
  * 
  * @author guy.watson@internetrix.com.au
- * @package versionedhasmanydataobject
+ * @package versionedextensions
  * 
  */
 class VersionedHMDataObjectExtension extends DataExtension {

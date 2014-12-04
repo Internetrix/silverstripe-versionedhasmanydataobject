@@ -1,8 +1,8 @@
 <?php
 /**
  * 
- * @author guy.watson@internetrix.com.au
- * @package versionedhasmanydataobject
+ * @author jason.zhang@internetrix.com.au
+ * @package versionedextensions
  * 
  */
 class VersionedMMDataObjectExtension extends DataExtension {

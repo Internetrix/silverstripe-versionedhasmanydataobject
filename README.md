@@ -1,4 +1,4 @@
-silverstripe-versionedhasmanydataobject
+silverstripe-versionedextensions
 =======================================
 
 Allows has_many dataobjects on pages to be versioned.
