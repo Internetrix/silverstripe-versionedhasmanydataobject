@@ -82,13 +82,6 @@ class VersionedMMDataObjectExtension extends DataExtension {
 				$LiveManyManyTable = "{$StageManyManyTable}_Live";
 				
 				if(in_array($LiveManyManyTable, $tableList)){
-					//get all stage Many Many data
-					$ManyManyList = $this->owner->getManyManyComponents($componentName);
-					
-					$DB_fields = DB::fieldList($LiveManyManyTable);
-					
-					$ManyMany_extraFields = $this->owner->many_many_extraFields($componentName);
-
 					//get all stage data
 					$StageData = DB::query("SELECT * FROM \"{$StageManyManyTable}\" WHERE \"{$parentField}\" = {$this->owner->ID}");
 					
